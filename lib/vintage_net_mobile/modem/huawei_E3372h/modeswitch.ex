@@ -1,6 +1,6 @@
 defmodule VintageNetMobile.Modem.HuaweiE3372h.Modeswitch do
   @moduledoc """
-  VintageNetMobile PowerManager to handle the Huawei E3372h-510 (or -153) modem, which shows up as an ethernet interface in HiLink mode, as opposed to the CDC-NCM mode of the E3372 without an `h`. The `VintageNetEthernet` driver works in HiLink mode.
+  VintageNetMobile PowerManager to handle the Huawei E3372h-510 (or -153) modem, which shows up as an ethernet interface in HiLink mode, as opposed to the CDC-NCM mode of the E3372 without an `h`. The `VintageNetEthernet` driver works for HiLink mode, once the modeswitch has been made.
 
   A lot of these modems seem to develop problems over their lifetime. Usually on Linux, eg. Raspbian, drivers are in place to bring the modem into HiLink mode, and its functionality can be checked through the web interface it provides. If it's unable to connect to the mobile network, it will present as a captive portal, routing all traffic to itself.
   """
@@ -17,7 +17,7 @@ defmodule VintageNetMobile.Modem.HuaweiE3372h.Modeswitch do
   def power_on(state) do
     # Modem starts out as storage device, trigger modeswitch into HiLink mode
     _ = safe_cmd("usb_modeswitch", ["-v 12d1", "-p 1f01", "-J"]) # -> 14dc
-    {:ok, state, 600}
+    {:ok, state, 60_000}
   end
 
   @impl VintageNet.PowerManager
@@ -30,9 +30,10 @@ defmodule VintageNetMobile.Modem.HuaweiE3372h.Modeswitch do
   @impl VintageNet.PowerManager
   def power_off(state) do
     # Attempt modeswitch out of HiLink mode
+    # This doesn't actually seem to do anything
     _ = safe_cmd("usb_modeswitch", ["-v 12d1", "-p 14dc", "-J"])
 
-    {:ok, state, 30}
+    {:ok, state, 1_000}
   end
 
   @impl VintageNet.PowerManager
